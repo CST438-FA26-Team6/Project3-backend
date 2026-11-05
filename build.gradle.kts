@@ -3,6 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "2.3.21"
 	id("org.springframework.boot") version "4.1.2"
 	id("io.spring.dependency-management") version "1.1.7"
+	jacoco
 }
 
 group = "com.cst438.team6"
@@ -33,7 +34,49 @@ kotlin {
 		freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
 	}
 }
+//Jacoco
+jacoco {
+	toolVersion = "0.8.15"
+}
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+	classDirectories.setFrom(
+		fileTree(layout.buildDirectory.dir("classes/kotlin/main")) {
+			include("com/cst438/team6/project3/service/**")
+		}
+	)
+}
+//70%
+tasks.jacocoTestCoverageVerification {
+	dependsOn(tasks.test)
+	classDirectories.setFrom(
+		fileTree(layout.buildDirectory.dir("classes/kotlin/main")) {
+			include("com/cst438/team6/project3/service/**")
+		}
+	)
+	violationRules {
+		rule {
+			element = "PACKAGE"
+			includes = listOf("com.cst438.team6.project3.service")
+			limit {
+				counter = "LINE"
+				value = "COVEREDRATIO"
+				minimum = "0.70".toBigDecimal()
+			}
+		}
+	}
+}
+
+tasks.check {
+	dependsOn(tasks.jacocoTestCoverageVerification)
 }
