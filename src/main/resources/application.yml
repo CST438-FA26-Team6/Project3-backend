@@ -6,3 +6,8 @@ app:
 
   cors:
     allowed-origins: ${APP_CORS_ORIGINS:http://localhost:8081}
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
