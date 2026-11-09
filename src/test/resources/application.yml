@@ -1,0 +1,9 @@
+app:
+  jwt:
+    issuer: http://localhost:8080
+    secret-base64: "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
+    ttl: PT1H
+
+  cors:
+    allowed-origins:
+      - http://localhost:8081

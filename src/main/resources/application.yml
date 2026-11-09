@@ -1,0 +1,8 @@
+app:
+  jwt:
+    issuer: ${APP_JWT_ISSUER:http://localhost:8080}
+    secret-base64: ${APP_JWT_SECRET_BASE64}
+    ttl: ${APP_JWT_TTL:PT1H}
+
+  cors:
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:8081}
