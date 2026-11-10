@@ -7,6 +7,14 @@ app:
   cors:
     allowed-origins: ${APP_CORS_ORIGINS:http://localhost:8081}
 
+  oauth:
+    github:
+      client-id: ${GITHUB_CLIENT_ID:}
+      client-secret: ${GITHUB_CLIENT_SECRET:}
+    google:
+      web-client-id: ${GOOGLE_WEB_CLIENT_ID:}
+      web-client-secret: ${GOOGLE_WEB_CLIENT_SECRET:}
+
 spring:
   jpa:
     hibernate:
