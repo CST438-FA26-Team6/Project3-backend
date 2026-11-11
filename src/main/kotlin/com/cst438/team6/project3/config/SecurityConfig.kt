@@ -42,6 +42,7 @@ class SecurityConfig {
                 requests
                     .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                     .requestMatchers(
+                        "/errpr",
                         "/actuator/health",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",

@@ -16,7 +16,9 @@ import javax.crypto.spec.SecretKeySpec
 @Configuration
 @EnableConfigurationProperties(
     AppJwtProperties::class,
-    AppCorsProperties::class
+    AppCorsProperties::class,
+    GitHubOAuthProperties::class,
+    GoogleOAuthProperties::class
 )
 class JwtConfig {
 
