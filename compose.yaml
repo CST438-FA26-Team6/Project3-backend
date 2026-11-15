@@ -28,6 +28,12 @@ services:
       APP_JWT_SECRET_BASE64: ${APP_JWT_SECRET_BASE64:?Set APP_JWT_SECRET_BASE64 in a local .env file}
       APP_JWT_TTL: ${APP_JWT_TTL:-PT1H}
       APP_CORS_ORIGINS: ${APP_CORS_ORIGINS:-http://localhost:8081}
+#      add oath var
+      GOOGLE_WEB_CLIENT_ID: ${GOOGLE_WEB_CLIENT_ID:?Set GOOGLE_WEB_CLIENT_ID in a local .env file}
+      GOOGLE_WEB_CLIENT_SECRET: ${GOOGLE_WEB_CLIENT_SECRET:?Set GOOGLE_WEB_CLIENT_SECRET in a local .env file}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set GITHUB_CLIENT_ID in a local .env file}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Set GITHUB_CLIENT_SECRET in a local .env file}
+
     ports:
       - "${API_PORT:-8080}:8080"
     depends_on:
