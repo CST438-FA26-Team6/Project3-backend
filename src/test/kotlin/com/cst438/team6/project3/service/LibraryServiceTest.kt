@@ -43,7 +43,8 @@ class LibraryServiceTest {
     private val anime = Title(
         title = "Cowboy Bebop",
         mediaType = MediaType.ANIME,
-        id = 7
+        id = 7,
+        total = 26
     )
 
     @Test
@@ -77,7 +78,7 @@ class LibraryServiceTest {
         assertEquals(MediaType.ANIME, result.mediaType)
         assertEquals(LibraryStatus.WATCHING, result.status)
         assertEquals(0, result.progress)
-        assertNull(result.total)
+        assertEquals(26, result.total)
         assertNull(result.rating)
     }
 

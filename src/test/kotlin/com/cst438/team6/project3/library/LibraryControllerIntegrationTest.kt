@@ -62,7 +62,8 @@ class LibraryControllerIntegrationTest {
         anime = titleRepository.save(
             Title(
                 title = "Cowboy Bebop",
-                mediaType = MediaType.ANIME
+                mediaType = MediaType.ANIME,
+                total = 26
             )
         )
         token = appTokenService.issueFor(user)
@@ -96,6 +97,7 @@ class LibraryControllerIntegrationTest {
             .body("mediaType", equalTo("ANIME"))
             .body("status", equalTo("WATCHING"))
             .body("progress", equalTo(0))
+            .body("total", equalTo(26))
 
         val savedEntry = libraryEntryRepository.findAll().single()
         assertEquals(user.id, savedEntry.user.id)

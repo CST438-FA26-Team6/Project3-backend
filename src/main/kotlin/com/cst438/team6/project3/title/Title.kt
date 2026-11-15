@@ -21,5 +21,8 @@ class Title(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
+    var id: Long = 0,
+
+    @Column(name = "total_episodes_chapters")
+    var total: Int? = null
 )

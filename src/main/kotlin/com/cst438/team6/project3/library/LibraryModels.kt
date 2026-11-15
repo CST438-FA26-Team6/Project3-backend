@@ -26,7 +26,7 @@ data class LibraryEntryResponse(
                 mediaType = entry.title.mediaType,
                 status = entry.status,
                 progress = entry.progress,
-                total = null,
+                total = entry.title.total,
                 rating = entry.rating
             )
         }
