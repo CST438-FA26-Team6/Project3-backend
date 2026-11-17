@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -33,6 +34,13 @@ class SecurityConfigTest {
     fun `protected endpoint without token returns 401`() {
         mockMvc.perform(get("/"))
             .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `health endpoint is public`() {
+        mockMvc.perform(get("/health"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("UP"))
     }
 
     @Test
