@@ -23,15 +23,21 @@ java -version
 The Java output must report version 21. Gradle itself does not need to be
 installed.
 
-## 2. Clone the default branch
+## 2. Clone both default branches
+
+The two repositories must be sibling folders under one parent directory:
 
 ```bash
+mkdir Project3-workspace
+cd Project3-workspace
+git clone https://github.com/CST438-FA26-Team6/Project3.git
 git clone https://github.com/CST438-FA26-Team6/Project3-backend.git
 cd Project3-backend
 git branch --show-current
 ```
 
-The branch should be `main`.
+Both repositories should be on `main`. Keep this folder layout because the
+frontend instructions use the same shared workspace.
 
 ## 3. Create the local configuration
 
@@ -167,7 +173,8 @@ Record every command, its result, and any unclear instruction while testing.
 
 | Command | Result | Notes or error |
 | --- | --- | --- |
-| `git clone ...` |  |  |
+| `git clone .../Project3.git` |  |  |
+| `git clone .../Project3-backend.git` |  |  |
 | `cp .env.example .env` |  |  |
 | `docker compose up --build` |  |  |
 | `curl http://localhost:8080/health` |  |  |

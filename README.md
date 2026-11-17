@@ -23,10 +23,39 @@ To run the tests directly:
 Gradle does not need to be installed. The repository includes the Gradle
 wrapper.
 
-## Clone and configure
+## Clone both repositories
+
+The frontend and backend must be cloned into the same parent folder:
+
+```text
+Project3-workspace/
+├── Project3/
+└── Project3-backend/
+```
+
+Create that layout with:
 
 ```bash
+mkdir Project3-workspace
+cd Project3-workspace
+git clone https://github.com/CST438-FA26-Team6/Project3.git
 git clone https://github.com/CST438-FA26-Team6/Project3-backend.git
+```
+
+## Setup order
+
+The clone order does not matter, but start the projects in this order:
+
+1. Start this backend API and PostgreSQL with Docker Compose.
+2. Confirm `http://localhost:8080/health` returns `{"status":"UP"}`.
+3. Start the Expo frontend from the sibling `Project3` folder.
+
+The backend must be ready first because the frontend sends its API requests to
+`http://localhost:8080`.
+
+Then configure the backend:
+
+```bash
 cd Project3-backend
 cp .env.example .env
 ```
@@ -61,6 +90,9 @@ Expected response:
 ```
 
 The API uses port `8080`, and PostgreSQL uses port `5432`.
+
+To start the frontend in a second terminal, follow the
+[frontend README](https://github.com/CST438-FA26-Team6/Project3#readme).
 
 ## Load sample titles
 
