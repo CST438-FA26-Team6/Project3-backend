@@ -1,6 +1,7 @@
 .git
 .github
 .gradle
+gradle/gradle-daemon-jvm.properties
 .idea
 .kotlin
 build
