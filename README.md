@@ -23,6 +23,21 @@ To run the tests directly:
 Gradle does not need to be installed. The repository includes the Gradle
 wrapper.
 
+### Select Java 21 on macOS
+
+The backend requires Java 21. If `java -version` reports another version,
+install a Java 21 JDK (such as Temurin 21), then select it in the terminal:
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+```
+
+The output should begin with `openjdk version "21"`. Run these commands in
+each new terminal before running the Gradle tests, or add the first two lines
+to `~/.zshrc` to make the selection persistent.
+
 ## Clone both repositories
 
 The frontend and backend must be cloned into the same parent folder:
