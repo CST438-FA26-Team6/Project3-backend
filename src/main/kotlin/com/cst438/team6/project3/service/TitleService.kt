@@ -1,8 +1,10 @@
 package com.cst438.team6.project3.service
 
 import com.cst438.team6.project3.title.MediaType
+import com.cst438.team6.project3.title.Title
 import com.cst438.team6.project3.title.TitleRepository
 import com.cst438.team6.project3.title.TitleResponse
+import com.cst438.team6.project3.title.UpdateTitleRequest
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -38,14 +40,46 @@ class TitleService(
     }
 
     fun findById(titleId: Long): TitleResponse {
-        val title = titleRepository.findById(titleId).orElseThrow {
+        return TitleResponse.from(findTitle(titleId))
+    }
+
+    fun update(
+        titleId: Long,
+        request: UpdateTitleRequest
+    ): TitleResponse {
+        val normalizedTitle = request.title.trim()
+        if (normalizedTitle.isEmpty()) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "title must not be blank"
+            )
+        }
+        if (request.total != null && request.total < 0) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "total must not be negative"
+            )
+        }
+
+        val title = findTitle(titleId)
+        title.title = normalizedTitle
+        title.mediaType = request.mediaType
+        title.total = request.total
+
+        return TitleResponse.from(titleRepository.save(title))
+    }
+
+    fun delete(titleId: Long) {
+        titleRepository.delete(findTitle(titleId))
+    }
+
+    private fun findTitle(titleId: Long): Title {
+        return titleRepository.findById(titleId).orElseThrow {
             ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "title $titleId was not found"
             )
         }
-
-        return TitleResponse.from(title)
     }
 
     private fun parseMediaType(type: String?): MediaType? {
