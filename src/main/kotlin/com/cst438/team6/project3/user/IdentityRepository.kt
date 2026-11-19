@@ -11,4 +11,5 @@ interface IdentityRepository : JpaRepository<Identity, UUID> {
     ): Identity?
 
     fun findByUser_Id(userId: UUID): List<Identity>
+    fun deleteByUser_Id(userId: UUID)
 }

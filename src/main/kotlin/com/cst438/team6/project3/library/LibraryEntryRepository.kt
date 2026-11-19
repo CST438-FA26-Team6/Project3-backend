@@ -8,4 +8,5 @@ interface LibraryEntryRepository : JpaRepository<LibraryEntry, Long> {
         userId: UUID,
         titleId: Long
     ): Boolean
+    fun deleteByUser_Id(userId: UUID)
 }
