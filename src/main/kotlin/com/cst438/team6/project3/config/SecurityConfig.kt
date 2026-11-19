@@ -1,5 +1,6 @@
 package com.cst438.team6.project3.config
 
+import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
@@ -36,23 +37,34 @@ class SecurityConfig {
                 csrf.disable()
             }
             .sessionManagement { sessions ->
-                sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                sessions.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
             }
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                    .dispatcherTypeMatchers(
+                        DispatcherType.ERROR
+                    ).permitAll()
                     .requestMatchers(
-                        "/errpr",
+                        HttpMethod.POST,
+                        "/auth/**"
+                    ).permitAll()
+                    .requestMatchers(
+                        "/error",
                         "/actuator/health",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html"
                     ).permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest()
+                    .authenticated()
             }
             .oauth2ResourceServer { resourceServer ->
                 resourceServer.jwt { jwt ->
-                    jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                    jwt.jwtAuthenticationConverter(
+                        jwtAuthenticationConverter()
+                    )
                 }
             }
 
@@ -65,7 +77,9 @@ class SecurityConfig {
     ): CorsConfigurationSource {
         val configuration = CorsConfiguration()
 
-        configuration.allowedOrigins = properties.allowedOrigins
+        configuration.allowedOrigins =
+            properties.allowedOrigins
+
         configuration.allowedMethods = listOf(
             "GET",
             "POST",
@@ -74,27 +88,44 @@ class SecurityConfig {
             "DELETE",
             "OPTIONS"
         )
+
         configuration.allowedHeaders = listOf(
             HttpHeaders.AUTHORIZATION,
             HttpHeaders.CONTENT_TYPE
         )
 
-        val source = UrlBasedCorsConfigurationSource()
-        source.registerCorsConfiguration("/**", configuration)
+        val source =
+            UrlBasedCorsConfigurationSource()
+
+        source.registerCorsConfiguration(
+            "/**",
+            configuration
+        )
 
         return source
     }
 
-    private fun jwtAuthenticationConverter(): JwtAuthenticationConverter {
-        val authoritiesConverter = JwtGrantedAuthoritiesConverter()
+    private fun jwtAuthenticationConverter():
+            JwtAuthenticationConverter {
 
-        authoritiesConverter.setAuthoritiesClaimName(ROLES_CLAIM)
-        authoritiesConverter.setAuthorityPrefix(ROLE_PREFIX)
+        val authoritiesConverter =
+            JwtGrantedAuthoritiesConverter()
 
-        val authenticationConverter = JwtAuthenticationConverter()
-        authenticationConverter.setJwtGrantedAuthoritiesConverter(
-            authoritiesConverter
+        authoritiesConverter.setAuthoritiesClaimName(
+            ROLES_CLAIM
         )
+
+        authoritiesConverter.setAuthorityPrefix(
+            ROLE_PREFIX
+        )
+
+        val authenticationConverter =
+            JwtAuthenticationConverter()
+
+        authenticationConverter
+            .setJwtGrantedAuthoritiesConverter(
+                authoritiesConverter
+            )
 
         return authenticationConverter
     }

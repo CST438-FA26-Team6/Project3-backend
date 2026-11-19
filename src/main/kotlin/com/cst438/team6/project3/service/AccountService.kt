@@ -35,23 +35,24 @@ class AccountService(
             )
         }
 
-        val normalizedEmail = identity.email.trim().lowercase()
+        val normalizedEmail =
+            identity.email.trim().lowercase()
+
         val existingUser =
-            userRepository.findByEmailIgnoreCase(normalizedEmail)
+            userRepository.findByEmailIgnoreCase(
+                normalizedEmail
+            )
 
         if (existingUser != null) {
-            val existingProvider = existingUser.id?.let { userId ->
-                identityRepository.findByUser_Id(userId)
-                    .firstOrNull()
-                    ?.provider
-                    ?.name
-                    ?.lowercase()
-            } ?: "another provider"
-
-            throw ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "This email is already registered with $existingProvider."
+            identityRepository.save(
+                Identity(
+                    user = existingUser,
+                    provider = identity.provider,
+                    providerUserId = identity.providerUserId
+                )
             )
+
+            return existingUser
         }
 
         val user = userRepository.save(
