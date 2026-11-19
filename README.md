@@ -2,83 +2,177 @@
 
 Kotlin Spring Boot API for the Anime and Manga Tracker.
 
+Frontend repository:
+[CST438-FA26-Team6/Project3](https://github.com/CST438-FA26-Team6/Project3)
+
+For detailed verification and troubleshooting steps, see
+[`docs/runbook.md`](docs/runbook.md).
+
 ## Requirements
 
-- Docker Desktop
+To run the local stack:
+
 - Git
+- Docker Desktop with Docker Compose
 
-Java and Gradle do not need to be installed when running the project with Docker.
+To run the tests directly:
 
-## First-time setup
+- Java 21
+- Docker Desktop, because the integration tests use Testcontainers
 
-1. Clone the repository and enter its folder:
+Gradle does not need to be installed. The repository includes the Gradle
+wrapper.
 
-   ```bash
-   git clone https://github.com/CST438-FA26-Team6/Project3-backend.git
-   cd Project3-backend
-   ```
+### Select Java 21 on macOS
 
-2. Create your local environment file:
+The backend requires Java 21. If `java -version` reports another version,
+install a Java 21 JDK (such as Temurin 21), then select it in the terminal:
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+```
 
-3. Open `.env` and replace `replace-with-a-local-password` with a local database password. Never commit `.env`.
+The output should begin with `openjdk version "21"`. Run these commands in
+each new terminal before running the Gradle tests, or add the first two lines
+to `~/.zshrc` to make the selection persistent.
 
-4. Make sure Docker Desktop is running.
+## Clone both repositories
+
+The frontend and backend must be cloned into the same parent folder:
+
+```text
+Project3-workspace/
+├── Project3/
+└── Project3-backend/
+```
+
+Create that layout with:
+
+```bash
+mkdir Project3-workspace
+cd Project3-workspace
+git clone https://github.com/CST438-FA26-Team6/Project3.git
+git clone https://github.com/CST438-FA26-Team6/Project3-backend.git
+```
+
+## Setup order
+
+The clone order does not matter, but start the projects in this order:
+
+1. Start this backend API and PostgreSQL with Docker Compose.
+2. Confirm `http://localhost:8080/health` returns `{"status":"UP"}`.
+3. Start the Expo frontend from the sibling `Project3` folder.
+
+The backend must be ready first because the frontend sends its API requests to
+`http://localhost:8080`.
+
+Then configure the backend:
+
+```bash
+cd Project3-backend
+cp .env.example .env
+```
+
+The example environment file contains development-only values that are safe
+for a local Docker stack. Do not reuse them in production.
+
+Google and GitHub OAuth credentials are optional for starting the API and
+running the automated tests. Leave those values blank unless the team gives
+you test credentials privately. Never commit a populated `.env` file or real
+credentials.
 
 ## Start the API and PostgreSQL
+
+Make sure Docker Desktop is running, then run:
 
 ```bash
 docker compose up --build
 ```
 
-Docker Compose will:
+The first build can take several minutes. When startup finishes, open a second
+terminal and verify the API:
 
-- Build and start the Kotlin Spring Boot API
-- Start PostgreSQL 17
-- Wait for PostgreSQL to become healthy before starting the API
-- Preserve local database data in a Docker volume
+```bash
+curl http://localhost:8080/health
+```
 
-The API is available at [http://localhost:8080](http://localhost:8080). PostgreSQL is available on port `5432`.
+Expected response:
 
-The API currently returns `404` at the root URL because no controllers have been added yet. This is expected.
+```json
+{"status":"UP"}
+```
 
-## Run in the background
+The API uses port `8080`, and PostgreSQL uses port `5432`.
+
+To start the frontend in a second terminal, follow the
+[frontend README](https://github.com/CST438-FA26-Team6/Project3#readme).
+
+## Load sample titles
+
+After the API has started and created the tables, run:
+
+```bash
+docker compose exec -T db sh -c \
+  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < scripts/seed.sql
+```
+
+The seed script is safe to run more than once. Confirm the rows with:
+
+```bash
+docker compose exec db sh -c \
+  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT id, title, media_type, total_episodes_chapters FROM titles ORDER BY title;"'
+```
+
+## Run the tests
+
+Keep Docker Desktop running, then run:
+
+```bash
+./gradlew clean check
+```
+
+On Windows PowerShell, use:
+
+```powershell
+.\gradlew.bat clean check
+```
+
+The command runs the full test suite and verifies the 70% service-line
+coverage requirement. The HTML coverage report is generated at
+`build/reports/jacoco/test/html/index.html`.
+
+## Useful Docker commands
+
+Run in the background:
 
 ```bash
 docker compose up --build -d
 ```
 
-View running services:
+Check container status:
 
 ```bash
 docker compose ps
 ```
 
-View API logs:
+Follow API logs:
 
 ```bash
 docker compose logs -f api
 ```
 
-## Stop the services
+Stop the stack while preserving database data:
 
 ```bash
 docker compose down
 ```
 
-This stops the containers but preserves the PostgreSQL data.
-
-To stop the containers and permanently delete the local database volume, run:
+Delete the local containers and database volume:
 
 ```bash
 docker compose down -v
 ```
 
-## Run the tests without Docker Compose
-
-```bash
-./gradlew test
-```
+The final command permanently deletes only the local Docker database volume.
