@@ -10,6 +10,7 @@ import com.cst438.team6.project3.user.UserRole
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -29,8 +30,11 @@ class AccountServiceTest {
 
     @BeforeEach
     fun setUp() {
-        userRepository = mock(UserRepository::class.java)
-        identityRepository = mock(IdentityRepository::class.java)
+        userRepository =
+            mock(UserRepository::class.java)
+
+        identityRepository =
+            mock(IdentityRepository::class.java)
 
         accountService = AccountService(
             userRepository,
@@ -71,10 +75,20 @@ class AccountServiceTest {
         )
 
         assertEquals(user.id, result.id)
-        assertEquals("user@example.com", result.email)
+        assertEquals(
+            "user@example.com",
+            result.email
+        )
 
-        verify(userRepository, never()).save(any())
-        verify(identityRepository, never()).save(any())
+        verify(
+            userRepository,
+            never()
+        ).save(any())
+
+        verify(
+            identityRepository,
+            never()
+        ).save(any())
     }
 
     @Test
@@ -86,22 +100,30 @@ class AccountServiceTest {
             )
         ).thenReturn(null)
 
-        val exception = assertThrows<ResponseStatusException> {
-            accountService.findOrCreate(
-                ProviderIdentity(
-                    provider = AuthProvider.GITHUB,
-                    providerUserId = "123456",
-                    username = "user",
-                    email = "user@example.com",
-                    emailVerified = false
+        val exception =
+            assertThrows<ResponseStatusException> {
+                accountService.findOrCreate(
+                    ProviderIdentity(
+                        provider = AuthProvider.GITHUB,
+                        providerUserId = "123456",
+                        username = "user",
+                        email = "user@example.com",
+                        emailVerified = false
+                    )
                 )
-            )
-        }
+            }
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.statusCode)
+        assertEquals(
+            HttpStatus.BAD_REQUEST,
+            exception.statusCode
+        )
 
         verifyNoInteractions(userRepository)
-        verify(identityRepository, never()).save(any())
+
+        verify(
+            identityRepository,
+            never()
+        ).save(any())
     }
 
     @Test
@@ -122,11 +144,15 @@ class AccountServiceTest {
         ).thenReturn(null)
 
         `when`(
-            userRepository.save(any(User::class.java))
+            userRepository.save(
+                any(User::class.java)
+            )
         ).thenAnswer { invocation ->
             User(
-                username = invocation.getArgument<User>(0).username,
-                email = invocation.getArgument<User>(0).email,
+                username =
+                    invocation.getArgument<User>(0).username,
+                email =
+                    invocation.getArgument<User>(0).email,
                 role = UserRole.USER,
                 id = userId
             )
@@ -144,28 +170,32 @@ class AccountServiceTest {
 
         assertEquals(userId, result.id)
         assertEquals("user", result.username)
-        assertEquals("user@example.com", result.email)
-        assertEquals(UserRole.USER, result.role)
+        assertEquals(
+            "user@example.com",
+            result.email
+        )
+        assertEquals(
+            UserRole.USER,
+            result.role
+        )
 
-        verify(userRepository).save(any(User::class.java))
-        verify(identityRepository).save(any(Identity::class.java))
+        verify(userRepository).save(
+            any(User::class.java)
+        )
+
+        verify(identityRepository).save(
+            any(Identity::class.java)
+        )
     }
 
     @Test
-    fun `email registered with another provider returns conflict`() {
+    fun `verified email from another provider links identity to existing user`() {
         val userId = UUID.randomUUID()
 
         val existingUser = User(
             username = "user",
             email = "user@example.com",
             id = userId
-        )
-
-        val googleIdentity = Identity(
-            user = existingUser,
-            provider = AuthProvider.GOOGLE,
-            providerUserId = "google-123",
-            id = UUID.randomUUID()
         )
 
         `when`(
@@ -181,30 +211,56 @@ class AccountServiceTest {
             )
         ).thenReturn(existingUser)
 
-        `when`(
-            identityRepository.findByUser_Id(userId)
-        ).thenReturn(listOf(googleIdentity))
-
-        val exception = assertThrows<ResponseStatusException> {
-            accountService.findOrCreate(
-                ProviderIdentity(
-                    provider = AuthProvider.GITHUB,
-                    providerUserId = "github-123",
-                    username = "user",
-                    email = "user@example.com",
-                    emailVerified = true
-                )
+        val result = accountService.findOrCreate(
+            ProviderIdentity(
+                provider = AuthProvider.GITHUB,
+                providerUserId = "github-123",
+                username = "user",
+                email = "user@example.com",
+                emailVerified = true
             )
-        }
-
-        assertEquals(HttpStatus.CONFLICT, exception.statusCode)
-
-        assertEquals(
-            "This email is already registered with google.",
-            exception.reason
         )
 
-        verify(userRepository, never()).save(any())
-        verify(identityRepository, never()).save(any())
+        assertEquals(
+            existingUser.id,
+            result.id
+        )
+
+        assertEquals(
+            existingUser.email,
+            result.email
+        )
+
+        verify(
+            userRepository,
+            never()
+        ).save(any())
+
+        val identityCaptor =
+            ArgumentCaptor.forClass(
+                Identity::class.java
+            )
+
+        verify(identityRepository).save(
+            identityCaptor.capture()
+        )
+
+        val linkedIdentity =
+            identityCaptor.value
+
+        assertEquals(
+            AuthProvider.GITHUB,
+            linkedIdentity.provider
+        )
+
+        assertEquals(
+            "github-123",
+            linkedIdentity.providerUserId
+        )
+
+        assertEquals(
+            userId,
+            linkedIdentity.user.id
+        )
     }
 }

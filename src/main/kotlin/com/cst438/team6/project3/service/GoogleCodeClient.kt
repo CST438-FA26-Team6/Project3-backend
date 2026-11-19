@@ -14,10 +14,12 @@ class GoogleCodeClient(
     private val properties: GoogleOAuthProperties,
     restClientBuilder: RestClient.Builder
 ) {
+
     companion object {
         private const val TOKEN_URL =
             "https://oauth2.googleapis.com/token"
     }
+
     private val http = restClientBuilder.build()
 
     fun exchange(
@@ -29,14 +31,22 @@ class GoogleCodeClient(
 
         form.add("code", code)
         form.add("client_id", properties.webClientId)
-        form.add("client_secret", properties.webClientSecret)
+        form.add(
+            "client_secret",
+            properties.webClientSecret
+        )
         form.add("redirect_uri", redirectUri)
-        form.add("grant_type", "authorization_code")
+        form.add(
+            "grant_type",
+            "authorization_code"
+        )
         form.add("code_verifier", codeVerifier)
 
         val response = http.post()
             .uri(TOKEN_URL)
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .contentType(
+                MediaType.APPLICATION_FORM_URLENCODED
+            )
             .accept(MediaType.APPLICATION_JSON)
             .body(form)
             .retrieve()
@@ -45,6 +55,7 @@ class GoogleCodeClient(
                 HttpStatus.UNAUTHORIZED,
                 "Google token exchange failed."
             )
+
         return response.idToken
     }
 }

@@ -34,7 +34,6 @@ class GoogleIdentityVerifier(
             .withJwkSetUri(GOOGLE_JWKS)
             .build()
             .also { decoder ->
-
                 val issuerValidator =
                     JwtClaimValidator<String>(
                         "iss"
@@ -46,12 +45,13 @@ class GoogleIdentityVerifier(
                     JwtClaimValidator<List<String>>(
                         "aud"
                     ) { audience ->
-                        audience?.contains(
+                        audience.contains(
                             properties.webClientId
-                        ) == true
+                        )
                     }
 
-                val validator: OAuth2TokenValidator<Jwt> =
+                val validator:
+                        OAuth2TokenValidator<Jwt> =
                     DelegatingOAuth2TokenValidator(
                         JwtValidators.createDefault(),
                         issuerValidator,
@@ -61,7 +61,9 @@ class GoogleIdentityVerifier(
                 decoder.setJwtValidator(validator)
             }
 
-    fun verify(idToken: String): ProviderIdentity {
+    fun verify(
+        idToken: String
+    ): ProviderIdentity {
         val jwt = try {
             googleDecoder.decode(idToken)
         } catch (_: JwtException) {
@@ -84,7 +86,9 @@ class GoogleIdentityVerifier(
             )
 
         val emailVerified =
-            jwt.getClaimAsBoolean("email_verified") == true
+            jwt.getClaimAsBoolean(
+                "email_verified"
+            ) == true
 
         val username =
             jwt.getClaimAsString("name")
