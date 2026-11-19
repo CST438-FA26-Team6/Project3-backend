@@ -3,6 +3,7 @@ package com.cst438.team6.project3.service
 import com.cst438.team6.project3.title.MediaType
 import com.cst438.team6.project3.title.Title
 import com.cst438.team6.project3.title.TitleRepository
+import com.cst438.team6.project3.title.UpdateTitleRequest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
@@ -93,6 +94,86 @@ class TitleServiceTest {
 
         val exception = assertThrows<ResponseStatusException> {
             titleService.findById(99)
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.statusCode)
+    }
+
+    @Test
+    fun `admin update changes and saves the title`() {
+        val title = Title("Cowboy Bebop", MediaType.ANIME, 1, 26)
+        val request = UpdateTitleRequest(
+            title = "  Cowboy Bebop Remastered  ",
+            mediaType = MediaType.MANGA,
+            total = 12
+        )
+        `when`(titleRepository.findById(1)).thenReturn(Optional.of(title))
+        `when`(titleRepository.save(title)).thenReturn(title)
+
+        val result = titleService.update(1, request)
+
+        assertEquals("Cowboy Bebop Remastered", result.title)
+        assertEquals(MediaType.MANGA, result.mediaType)
+        assertEquals(12, result.total)
+        verify(titleRepository).save(title)
+    }
+
+    @Test
+    fun `update rejects a blank title`() {
+        val exception = assertThrows<ResponseStatusException> {
+            titleService.update(
+                1,
+                UpdateTitleRequest("   ", MediaType.ANIME, 26)
+            )
+        }
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.statusCode)
+        verifyNoInteractions(titleRepository)
+    }
+
+    @Test
+    fun `update rejects a negative total`() {
+        val exception = assertThrows<ResponseStatusException> {
+            titleService.update(
+                1,
+                UpdateTitleRequest("Cowboy Bebop", MediaType.ANIME, -1)
+            )
+        }
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.statusCode)
+        verifyNoInteractions(titleRepository)
+    }
+
+    @Test
+    fun `update returns not found for an unknown title`() {
+        `when`(titleRepository.findById(99)).thenReturn(Optional.empty())
+
+        val exception = assertThrows<ResponseStatusException> {
+            titleService.update(
+                99,
+                UpdateTitleRequest("Unknown", MediaType.ANIME, null)
+            )
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.statusCode)
+    }
+
+    @Test
+    fun `delete removes an existing title`() {
+        val title = Title("Cowboy Bebop", MediaType.ANIME, 1, 26)
+        `when`(titleRepository.findById(1)).thenReturn(Optional.of(title))
+
+        titleService.delete(1)
+
+        verify(titleRepository).delete(title)
+    }
+
+    @Test
+    fun `delete returns not found for an unknown title`() {
+        `when`(titleRepository.findById(99)).thenReturn(Optional.empty())
+
+        val exception = assertThrows<ResponseStatusException> {
+            titleService.delete(99)
         }
 
         assertEquals(HttpStatus.NOT_FOUND, exception.statusCode)
