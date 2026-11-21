@@ -64,7 +64,7 @@ run:
 
 ```bash
 docker compose ps
-curl http://localhost:8080/health
+curl http://localhost:8080/actuator/health
 ```
 
 Both `api` and `db` should be running. The health request should return:
@@ -72,6 +72,10 @@ Both `api` and `db` should be running. The health request should return:
 ```json
 {"status":"UP"}
 ```
+
+Open `http://localhost:8080/swagger-ui.html` to view and try the API
+documentation. The source specification is available at
+`http://localhost:8080/openapi.yaml`.
 
 ## 5. Load and verify sample data
 
@@ -177,5 +181,5 @@ Record every command, its result, and any unclear instruction while testing.
 | `git clone .../Project3-backend.git` |  |  |
 | `cp .env.example .env` |  |  |
 | `docker compose up --build` |  |  |
-| `curl http://localhost:8080/health` |  |  |
+| `curl http://localhost:8080/actuator/health` |  |  |
 | `./gradlew clean check` |  |  |
