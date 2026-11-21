@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -41,6 +43,24 @@ class SecurityConfigTest {
             .andExpect(
                 status().isUnauthorized
             )
+    }
+
+    @Test
+    fun `actuator health endpoint is public`() {
+        mockMvc.perform(
+            get("/actuator/health")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("UP"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `old custom health endpoint no longer exists`() {
+        mockMvc.perform(
+            get("/health")
+        )
+            .andExpect(status().isNotFound)
     }
 
     @Test
