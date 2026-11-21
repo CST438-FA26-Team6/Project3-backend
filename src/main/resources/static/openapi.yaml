@@ -1,0 +1,414 @@
+openapi: 3.1.0
+info:
+  title: Anime and Manga Tracker API
+  version: 0.3.0
+  description: API for authentication, title search, personal libraries, and user profiles.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://anime-manga-tracker-api.onrender.com
+    description: Render deployment
+tags:
+  - name: Authentication
+  - name: Titles
+  - name: Library
+  - name: Users
+  - name: Health
+paths:
+  /auth/github:
+    post:
+      tags: [Authentication]
+      summary: Sign in with a GitHub authorization code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeExchangeRequest'
+      responses:
+        '200':
+          description: Authentication succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /auth/google:
+    post:
+      tags: [Authentication]
+      summary: Sign in with a Google ID token or authorization code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleAuthRequest'
+      responses:
+        '200':
+          description: Authentication succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/titles:
+    get:
+      tags: [Titles]
+      summary: Search anime and manga titles
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MediaType'
+      responses:
+        '200':
+          description: Matching titles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TitleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/titles/{titleId}:
+    parameters:
+      - name: titleId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [Titles]
+      summary: Get a title by ID
+      responses:
+        '200':
+          description: Requested title
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Titles]
+      summary: Update a title as an administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTitleRequest'
+      responses:
+        '200':
+          description: Updated title
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Titles]
+      summary: Delete a title as an administrator
+      responses:
+        '204':
+          description: Title deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/library:
+    post:
+      tags: [Library]
+      summary: Add a title to the current user's library
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLibraryEntryRequest'
+      responses:
+        '201':
+          description: Library entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryEntryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: The title is already in the user's library
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /api/users/me:
+    get:
+      tags: [Users]
+      summary: Get the current user's profile
+      responses:
+        '200':
+          description: Current profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Users]
+      summary: Update the current user's username
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserProfileRequest'
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Users]
+      summary: Delete the current user's account
+      responses:
+        '204':
+          description: Account deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /actuator/health:
+    get:
+      tags: [Health]
+      summary: Check whether the API is running
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Authentication is required or the token is invalid
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: The authenticated user is not allowed to perform this action
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  schemas:
+    ProblemDetail:
+      type: object
+      description: RFC 9457 problem details response.
+      required: [type, title, status, detail, instance]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          example: about:blank
+        title:
+          type: string
+          example: Bad Request
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: The request could not be processed.
+        instance:
+          type: string
+          format: uri-reference
+          example: /api/titles
+    CodeExchangeRequest:
+      type: object
+      required: [code, codeVerifier, redirectUri]
+      properties:
+        code:
+          type: string
+        codeVerifier:
+          type: string
+        redirectUri:
+          type: string
+          format: uri
+    GoogleAuthRequest:
+      type: object
+      description: Supply idToken for Android, or code, codeVerifier, and redirectUri for web.
+      properties:
+        idToken:
+          type: [string, 'null']
+        code:
+          type: [string, 'null']
+        codeVerifier:
+          type: [string, 'null']
+        redirectUri:
+          type: [string, 'null']
+          format: uri
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserProfileResponse'
+    UserProfileResponse:
+      type: object
+      required: [id, username, email, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [USER, ADMIN]
+    UpdateUserProfileRequest:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+    MediaType:
+      type: string
+      enum: [ANIME, MANGA]
+    TitleResponse:
+      type: object
+      required: [id, title, mediaType]
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        mediaType:
+          $ref: '#/components/schemas/MediaType'
+        total:
+          type: [integer, 'null']
+    UpdateTitleRequest:
+      type: object
+      required: [title, mediaType]
+      properties:
+        title:
+          type: string
+        mediaType:
+          $ref: '#/components/schemas/MediaType'
+        total:
+          type: [integer, 'null']
+    LibraryStatus:
+      type: string
+      enum:
+        - WATCHING
+        - READING
+        - COMPLETED
+        - ON_HOLD
+        - DROPPED
+        - PLAN_TO_WATCH
+        - PLAN_TO_READ
+    CreateLibraryEntryRequest:
+      type: object
+      required: [titleId, status]
+      properties:
+        titleId:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/LibraryStatus'
+    LibraryEntryResponse:
+      type: object
+      required: [id, titleId, title, mediaType, status, progress]
+      properties:
+        id:
+          type: integer
+          format: int64
+        titleId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        mediaType:
+          $ref: '#/components/schemas/MediaType'
+        status:
+          $ref: '#/components/schemas/LibraryStatus'
+        progress:
+          type: integer
+        total:
+          type: [integer, 'null']
+        rating:
+          type: [integer, 'null']
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: UP
+security:
+  - bearerAuth: []

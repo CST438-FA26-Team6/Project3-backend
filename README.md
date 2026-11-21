@@ -62,7 +62,7 @@ git clone https://github.com/CST438-FA26-Team6/Project3-backend.git
 The clone order does not matter, but start the projects in this order:
 
 1. Start this backend API and PostgreSQL with Docker Compose.
-2. Confirm `http://localhost:8080/health` returns `{"status":"UP"}`.
+2. Confirm `http://localhost:8080/actuator/health` reports a status of `UP`.
 3. Start the Expo frontend from the sibling `Project3` folder.
 
 The backend must be ready first because the frontend sends its API requests to
@@ -95,7 +95,7 @@ The first build can take several minutes. When startup finishes, open a second
 terminal and verify the API:
 
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:8080/actuator/health
 ```
 
 Expected response:
@@ -103,6 +103,12 @@ Expected response:
 ```json
 {"status":"UP"}
 ```
+
+API documentation is available at:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI YAML: `http://localhost:8080/openapi.yaml`
+- Generated OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
 The API uses port `8080`, and PostgreSQL uses port `5432`.
 

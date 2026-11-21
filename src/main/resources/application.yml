@@ -16,6 +16,22 @@ app:
       web-client-secret: ${GOOGLE_WEB_CLIENT_SECRET:}
 
 spring:
+  mvc:
+    problemdetails:
+      enabled: true
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    url: /openapi.yaml

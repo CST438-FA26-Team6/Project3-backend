@@ -53,6 +53,7 @@ class SecurityConfig {
                     .requestMatchers(
                         "/error",
                         "/actuator/health",
+                        "/openapi.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html"

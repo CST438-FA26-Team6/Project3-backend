@@ -12,6 +12,7 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -98,6 +99,17 @@ class TitleControllerIntegrationTest(
                 .param("query", "   ")
         )
             .andExpect(status().isBadRequest)
+            .andExpect(
+                content().contentType(
+                    "application/problem+json"
+                )
+            )
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").exists())
+            .andExpect(
+                jsonPath("$.instance")
+                    .value("/api/titles")
+            )
     }
 
     @Test
